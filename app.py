@@ -518,16 +518,16 @@ if calcular:
 
     # Linha vertical separando histórico e previsão
     fig.add_vline(
-    x=len(rot_hist) - 1,
-    line_dash="dot", line_color="#c0622a", line_width=1.2,
-    annotation_text="→ início da previsão",
-    annotation_position="top left",
-    annotation_font_color="#c0622a",
+        x=len(rot_hist) - 1,
+        line_dash="dot", line_color="#c0622a", line_width=1.2,
+        annotation_text="→ início da previsão",
+        annotation_position="top left",
+        annotation_font_color="#c0622a",
     )
 
     # Fundo sombreado na área de previsão
     fig.add_vrect(
-        x0=rot_hist[-1], x1=rot_prev[-1],
+        x0=len(rot_hist) - 1, x1=len(rot_hist) + len(rot_prev) - 1,
         fillcolor="#fff3eb", opacity=0.4, layer="below", line_width=0,
     )
 
@@ -657,31 +657,7 @@ A demanda de **{nome_curto}** está **estável**, com média de
         </span>
     </div>""", unsafe_allow_html=True)
 
-    st.markdown("---")
 
-    # =========================================================================
-    # ETAPA 18 — GLOSSÁRIO EDUCACIONAL (EXPANSÍVEL)
-    # Ajuda os alunos a conectar os conceitos do app com a disciplina.
-    # st.expander() cria um bloco que fica recolhido por padrão.
-    # =========================================================================
-
-    with st.expander("📚 Glossário — conceitos de Administração da Produção"):
-        st.markdown("""
-| Conceito | Aplicação no ramo alimentício |
-|---|---|
-| **Demanda** | Quantidade de um prato, bebida ou produto vendida por semana |
-| **Série histórica** | Registro das vendas semana a semana |
-| **Previsão de demanda** | Estimativa de quanto produzir nas próximas semanas |
-| **Método ingênuo** | Usa a última semana como referência — útil como linha de base |
-| **Média móvel simples** | Suaviza variações sazonais de curto prazo |
-| **Média móvel ponderada** | Reage mais rápido a tendências recentes |
-| **Suavização exponencial** | Balanceia histórico e reação a mudanças via alfa (α) |
-| **Regressão linear** | Projeta tendência de crescimento ou queda do item |
-| **MAE** | Erro Médio Absoluto — mede a precisão histórica do método |
-| **Desperdício** | Consequência de produzir acima da demanda real (crítico em alimentos) |
-| **Ruptura** | Falta de produto — perda de venda e insatisfação do cliente |
-| **Estoque de segurança** | Margem extra para absorver variações inesperadas |
-        """)
 
 # =============================================================================
 # FIM DO ARQUIVO app.py
