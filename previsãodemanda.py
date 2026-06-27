@@ -547,10 +547,19 @@ if calcular:
     )
 
     fig.update_layout(
-        height=400,
+        height=440,
         hovermode="x unified",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(l=0, r=0, t=40, b=0),
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.25,
+            xanchor="center",
+            x=0.5,
+            bgcolor="rgba(255,253,249,0.8)",
+            bordercolor="#f0d9c4",
+            borderwidth=1,
+        ),
+        margin=dict(l=0, r=0, t=40, b=120),
         xaxis_title="Semana",
         yaxis_title=f"Demanda ({unidade})",
         plot_bgcolor="#fffdf9",
