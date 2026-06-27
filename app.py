@@ -327,6 +327,21 @@ with st.sidebar:
     }
 
     st.markdown("---")
+
+    # Capacidade máxima de produção
+    st.subheader("⚙️ Capacidade produtiva")
+    usar_capacidade = st.checkbox("Ativar alerta de capacidade", value=False)
+    capacidade_maxima = None
+    if usar_capacidade:
+        capacidade_maxima = st.number_input(
+            "Capacidade máxima por semana",
+            min_value=1.0,
+            value=float(CATALOGO[segmento][produto][0]) * 1.5,
+            step=1.0,
+            help="Limite máximo que seu estabelecimento produz por semana (ex: capacidade do forno, da equipe, da cozinha)."
+        )
+
+    st.markdown("---")
     st.caption("📌 Os dados de exemplo são simulados com base em padrões reais do setor alimentício.")
 
 
@@ -656,6 +671,87 @@ A demanda de **{nome_curto}** está **estável**, com média de
         campanhas de marketing — podem alterar a demanda real. Revise semanalmente.
         </span>
     </div>""", unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # =========================================================================
+    # ETAPA 18 — ESTOQUE DE SEGURANÇA
+    # Fórmula: Estoque de Segurança = Z × Desvio Padrão da demanda histórica
+    # Z = 1,65 para nível de serviço de 95% (padrão do setor alimentício)
+    # Resultado: quanto produzir além da previsão para cobrir variações.
+    # =========================================================================
+
+    st.subheader("🛡️ Estoque de Segurança")
+
+    # Cálculo do desvio padrão do histórico
+    desvio_hist = float(np.std(hist))
+
+    # Z = 1,65 → nível de serviço de 95%
+    z = 1.65
+    estoque_seg = round(z * desvio_hist, 1)
+
+    prev_base = round(previsoes[melhor][0], 1)
+    producao_recomendada = round(prev_base + estoque_seg, 1)
+
+    cs1, cs2, cs3 = st.columns(3)
+    with cs1:
+        st.markdown(f"""<div class="metric-card">
+            <div class="metric-label">Previsão próxima semana</div>
+            <div class="metric-value">{prev_base}</div>
+            <div class="metric-sub">{unidade}</div></div>""", unsafe_allow_html=True)
+    with cs2:
+        st.markdown(f"""<div class="metric-card">
+            <div class="metric-label">Estoque de segurança (95%)</div>
+            <div class="metric-value">{estoque_seg}</div>
+            <div class="metric-sub">{unidade} adicionais</div></div>""", unsafe_allow_html=True)
+    with cs3:
+        st.markdown(f"""<div class="metric-card" style="border-color:#c0622a;">
+            <div class="metric-label">Produção recomendada</div>
+            <div class="metric-value" style="color:#c0622a;">{producao_recomendada}</div>
+            <div class="metric-sub">{unidade} no total</div></div>""", unsafe_allow_html=True)
+
+    st.markdown(f"""<div class="warn-box" style="margin-top:0.8rem">
+        📦 <strong>Como interpretar:</strong> A previsão indica <strong>{prev_base} {unidade}</strong>.
+        Somando o estoque de segurança de <strong>{estoque_seg} {unidade}</strong>
+        (calculado com 95% de nível de serviço), a produção recomendada é de
+        <strong>{producao_recomendada} {unidade}</strong> — cobrindo variações inesperadas
+        sem gerar excesso de estoque.
+    </div>""", unsafe_allow_html=True)
+
+    # =========================================================================
+    # ETAPA 19 — ALERTA DE CAPACIDADE MÁXIMA
+    # Compara a produção recomendada com o limite informado pelo usuário.
+    # Se ultrapassar, emite alerta vermelho com orientação gerencial.
+    # =========================================================================
+
+    if usar_capacidade and capacidade_maxima:
+        st.markdown("---")
+        st.subheader("⚙️ Alerta de Capacidade Produtiva")
+
+        if producao_recomendada > capacidade_maxima:
+            excesso = round(producao_recomendada - capacidade_maxima, 1)
+            st.error(
+                f"🚨 **Atenção:** A produção recomendada de **{producao_recomendada} {unidade}** "
+                f"ultrapassa a capacidade máxima de **{capacidade_maxima:.0f} {unidade}** "
+                f"em **{excesso} {unidade}**.\n\n"
+                f"**Ações sugeridas:**\n"
+                f"- Avalie ampliar a capacidade (mais turnos, equipamentos ou funcionários).\n"
+                f"- Priorize os itens de maior margem caso não seja possível produzir tudo.\n"
+                f"- Comunique o risco de ruptura de estoque ao gestor responsável."
+            )
+        elif producao_recomendada > capacidade_maxima * 0.90:
+            st.warning(
+                f"⚠️ **Atenção:** A produção recomendada de **{producao_recomendada} {unidade}** "
+                f"está próxima do limite de capacidade de **{capacidade_maxima:.0f} {unidade}** "
+                f"({round(producao_recomendada/capacidade_maxima*100)}% da capacidade).\n\n"
+                f"Monitore de perto — pequenas variações na demanda podem ultrapassar o limite."
+            )
+        else:
+            st.success(
+                f"✅ A produção recomendada de **{producao_recomendada} {unidade}** está "
+                f"dentro da capacidade de **{capacidade_maxima:.0f} {unidade}** "
+                f"({round(producao_recomendada/capacidade_maxima*100)}% da capacidade utilizada)."
+            )
 
 
 
