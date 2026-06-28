@@ -266,16 +266,32 @@ def calcular_mae(hist: list, metodo: str, janela: int, alfa: float) -> float | N
 # =============================================================================
 
 def detectar_tendencia(hist: list) -> str:
-    mid  = len(hist) // 2
+    n    = len(hist)
+    mid  = n // 2
     m1   = sum(hist[:mid]) / mid
-    m2   = sum(hist[mid:]) / (len(hist) - mid)
+    m2   = sum(hist[mid:]) / (n - mid)
     diff = (m2 - m1) / m1 * 100
-    media = sum(hist) / len(hist)
-    desvio = (sum((v - media) ** 2 for v in hist) / len(hist)) ** 0.5
-    cv = desvio / media if media else 0
-    if cv > 0.20:   return "irregular"
-    if diff >  5:   return "crescimento"
-    if diff < -5:   return "queda"
+
+    # Calcula o CV sobre os RESÍDUOS da tendência linear
+    # (diferença entre cada valor real e o valor esperado pela reta)
+    # Isso evita classificar crescimento estável como "irregular"
+    x     = list(range(1, n + 1))
+    xm    = sum(x) / n
+    ym    = sum(hist) / n
+    num   = sum((x[i] - xm) * (hist[i] - ym) for i in range(n))
+    den   = sum((x[i] - xm) ** 2 for i in range(n))
+    b     = num / den if den != 0 else 0
+    a     = ym - b * xm
+
+    # Resíduos = valor real - valor esperado pela reta
+    residuos  = [hist[i] - (a + b * x[i]) for i in range(n)]
+    media_res = sum(residuos) / n
+    desvio_res = (sum((r - media_res) ** 2 for r in residuos) / n) ** 0.5
+    cv_residuos = desvio_res / ym if ym else 0
+
+    if cv_residuos > 0.15: return "irregular"
+    if diff >  5:          return "crescimento"
+    if diff < -5:          return "queda"
     return "estavel"
 
 
